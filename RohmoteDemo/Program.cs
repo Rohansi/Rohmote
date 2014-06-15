@@ -31,20 +31,26 @@ namespace RohmoteDemo
             var client = new RpcClient("127.0.0.1", 3000);
             client.On("GetName", () => "Rohan");
 
-            try
+            client.Connected += async () =>
             {
-                Console.WriteLine("Hello1: {0}", await client.Call<string, string>("Hello1", "Brian"));
+                try
+                {
+                    Console.WriteLine("Hello1: {0}", await client.Call<string, string>("Hello1", "Brian"));
 
-                Console.WriteLine("Hello2: {0}", await client.Call<string>("Hello2"));
+                    Console.WriteLine("Hello2: {0}", await client.Call<string>("Hello2"));
 
-                Console.WriteLine("Add: {0}", await client.Call<int, int, int>("Add", 10, 301));
+                    Console.WriteLine("Add: {0}", await client.Call<int, int, int>("Add", 10, 301));
 
-                Console.WriteLine("Test: {0}", await client.Call<TestClass, string>("Test", new TestClass { Member = "HELP" }));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+                    Console.WriteLine("Test: {0}", await client.Call<TestClass, string>("Test", new TestClass { Member = "HELP" }));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            };
+
+            // give the client some time to connect
+            await Task.Delay(500);
         }
 
         static void Main()

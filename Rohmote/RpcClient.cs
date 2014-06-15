@@ -18,44 +18,42 @@ namespace Rohmote
             {
                 var connected = Connected;
                 if (connected != null)
-                    connected();
+                    Task.Run(() => SafeCall(connected));
             };
 
             client.Closed += (sender, args) =>
             {
                 var disconnected = Disconnected;
                 if (disconnected != null)
-                    disconnected();
+                    Task.Run(() => SafeCall(disconnected));
             };
 
-            Send = message =>
+            Send = message => SafeCall(() =>
             {
-                try
-                {
-                    var data = RpcMessage.Write(message);
-                    client.Send(data);
-                }
-                catch (Exception e)
-                {
-                    DispatchError(e);
-                }
-            };
+                var data = RpcMessage.Write(message);
+                client.Send(data);
+            });
 
-            client.MessageReceived += (sender, args) =>
+            client.MessageReceived += (sender, args) => SafeCall(() =>
             {
-                try
-                {
-                    var data = args.Message;
-                    var message = RpcMessage.Read(data);
-                    Task.Run(() => ProcessMessage(message));
-                }
-                catch (Exception e)
-                {
-                    DispatchError(e);
-                }
-            };
+                var data = args.Message;
+                var message = RpcMessage.Read(data);
+                Task.Run(() => ProcessMessage(message));
+            });
 
-            client.Open();
+            Task.Run(() => SafeCall(client.Open));
+        }
+
+        private void SafeCall(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                DispatchError(e);
+            }
         }
     }
 }
