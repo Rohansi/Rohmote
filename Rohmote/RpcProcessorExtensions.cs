@@ -177,12 +177,14 @@ namespace Rohmote
         // for On
         private static JToken ToReturn<T>(T value)
         {
+            if (ReferenceEquals(value, null)) return new JValue((object)null);
             return JToken.FromObject(value); // TODO: should this be error checked?
         }
 
         // for Call
         private static JToken ToParameter<T>(T value)
         {
+            if (ReferenceEquals(value, null)) return new JValue((object)null);
             return JToken.FromObject(value); // TODO: should this be error checked?
         }
 
