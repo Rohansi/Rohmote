@@ -72,7 +72,7 @@ namespace Rohmote
             {
                 switch (message.Type)
                 {
-                    case "req":
+                    case RpcMessageType.Request:
                         var request = (RpcRequest)message;
 
                         try
@@ -101,7 +101,7 @@ namespace Rohmote
                         }
                         break;
 
-                    case "res":
+                    case RpcMessageType.Response:
                         var response = (RpcResponse)message;
 
                         TaskCompletionSource<JToken> completion;

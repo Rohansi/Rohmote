@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RpcException.cs" />
-    <Compile Include="RpcMessages.cs" />
+    <Compile Include="RpcMessage.cs" />
     <Compile Include="RpcClient.cs" />
     <Compile Include="RpcProcessor.cs" />
     <Compile Include="RpcProcessorExtensions.cs" />

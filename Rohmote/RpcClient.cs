@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using WebSocket4Net;
 
 namespace Rohmote
@@ -33,7 +32,7 @@ namespace Rohmote
             {
                 try
                 {
-                    var data = message.Type + JsonConvert.SerializeObject(message);
+                    var data = RpcMessage.Write(message);
                     client.Send(data);
                 }
                 catch (Exception e)
@@ -47,23 +46,7 @@ namespace Rohmote
                 try
                 {
                     var data = args.Message;
-                    var type = data.Substring(0, 3);
-                    var json = data.Substring(3);
-
-                    IRpcMessage message;
-
-                    switch (type)
-                    {
-                        case "req":
-                            message = JsonConvert.DeserializeObject<RpcRequest>(json);
-                            break;
-                        case "res":
-                            message = JsonConvert.DeserializeObject<RpcResponse>(json);
-                            break;
-                        default:
-                            throw new NotSupportedException("Unsupported message type: " + type);
-                    }
-
+                    var message = RpcMessage.Read(data);
                     Task.Run(() => ProcessMessage(message));
                 }
                 catch (Exception e)

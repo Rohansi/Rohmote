@@ -12,7 +12,7 @@ namespace Rohmote
             {
                 CheckParameters(method, parameters, 0);
                 var result = await handler();
-                return ToReturn(method, result);
+                return ToReturn(result);
             });
         }
 
@@ -30,7 +30,7 @@ namespace Rohmote
                 var result = await handler(
                     FromParameters<T>(method, parameters, 0));
 
-                return ToReturn(method, result);
+                return ToReturn(result);
             });
         }
 
@@ -49,7 +49,7 @@ namespace Rohmote
                     FromParameters<T1>(method, parameters, 0),
                     FromParameters<T2>(method, parameters, 1));
 
-                return ToReturn(method, result);
+                return ToReturn(result);
             });
         }
 
@@ -69,7 +69,7 @@ namespace Rohmote
                     FromParameters<T2>(method, parameters, 1),
                     FromParameters<T3>(method, parameters, 2));
 
-                return ToReturn(method, result);
+                return ToReturn(result);
             });
         }
 
@@ -90,7 +90,7 @@ namespace Rohmote
                     FromParameters<T3>(method, parameters, 2),
                     FromParameters<T4>(method, parameters, 3));
 
-                return ToReturn(method, result);
+                return ToReturn(result);
             });
         }
 
@@ -109,7 +109,7 @@ namespace Rohmote
         {
             var parameters = new[]
             {
-                ToParameter(method, arg1)
+                ToParameter(arg1)
             };
 
             var result = await rpc.Invoke(method, parameters);
@@ -120,8 +120,8 @@ namespace Rohmote
         {
             var parameters = new[]
             {
-                ToParameter(method, arg1),
-                ToParameter(method, arg2)
+                ToParameter(arg1),
+                ToParameter(arg2)
             };
 
             var result = await rpc.Invoke(method, parameters);
@@ -132,9 +132,9 @@ namespace Rohmote
         {
             var parameters = new[]
             {
-                ToParameter(method, arg1),
-                ToParameter(method, arg2),
-                ToParameter(method, arg3)
+                ToParameter(arg1),
+                ToParameter(arg2),
+                ToParameter(arg3)
             };
 
             var result = await rpc.Invoke(method, parameters);
@@ -145,10 +145,10 @@ namespace Rohmote
         {
             var parameters = new[]
             {
-                ToParameter(method, arg1),
-                ToParameter(method, arg2),
-                ToParameter(method, arg3),
-                ToParameter(method, arg4)
+                ToParameter(arg1),
+                ToParameter(arg2),
+                ToParameter(arg3),
+                ToParameter(arg4)
             };
 
             var result = await rpc.Invoke(method, parameters);
@@ -175,13 +175,13 @@ namespace Rohmote
         }
         
         // for On
-        private static JToken ToReturn<T>(string method, T value)
+        private static JToken ToReturn<T>(T value)
         {
             return JToken.FromObject(value); // TODO: should this be error checked?
         }
 
         // for Call
-        private static JToken ToParameter<T>(string method, T value)
+        private static JToken ToParameter<T>(T value)
         {
             return JToken.FromObject(value); // TODO: should this be error checked?
         }
@@ -193,7 +193,7 @@ namespace Rohmote
             {
                 return value.ToObject<T>();
             }
-            catch (Exception e)
+            catch
             {
                 throw new Exception(string.Format("Return value for method '{0}' must be of type '{1}'", method, typeof(T).FullName));
             }
