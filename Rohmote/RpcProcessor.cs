@@ -5,12 +5,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Rohmote
 {
-    public class RpcProcessor
+    public class RpcProcessor : IDisposable
     {
+        public event Action Connected;
+        public event Action Disconnected;
+        public event Action<Exception> Error;
+
         public bool DetailedErrorMessages { get; set; }
         public TimeSpan CallTimeOut { get; set; }
         public object Tag { get; set; }
-        public event Action<Exception> Error;
 
         internal delegate Task<JToken> RpcHandler(RpcProcessor sender, JToken[] parameters);
         internal Action<IRpcMessage> Send;
@@ -25,6 +28,13 @@ namespace Rohmote
 
             DetailedErrorMessages = false;
             CallTimeOut = TimeSpan.FromSeconds(5);
+        }
+
+        public virtual void Dispose()
+        {
+            Send = null;
+            _handlers.Clear();
+            _requests.Clear();
         }
 
         internal void Register(string method, RpcHandler handler)
@@ -125,6 +135,20 @@ namespace Rohmote
             {
                 DispatchError(e);
             }
+        }
+
+        internal void DispatchConnected()
+        {
+            var connected = Connected;
+            if (connected != null)
+                connected();
+        }
+
+        internal void DispatchDisconnected()
+        {
+            var disconnected = Disconnected;
+            if (disconnected != null)
+                disconnected();
         }
 
         internal void DispatchError(Exception e)

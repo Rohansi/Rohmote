@@ -4,7 +4,7 @@ using SuperWebSocket;
 
 namespace Rohmote
 {
-    public class RpcServer
+    public class RpcServer : IDisposable
     {
         private class Connection : WebSocketSession<Connection>
         {
@@ -16,46 +16,62 @@ namespace Rohmote
 
         }
 
+        private Server _server;
+
         public RpcServer(string ip, int port, Action<RpcProcessor> initializer)
         {
-            var server = new Server();
-            server.Setup(ip, port);
+            _server = new Server();
+            _server.Setup(ip, port);
 
-            server.NewSessionConnected += connection =>
+            _server.NewSessionConnected += connection =>
             {
                 var rpc = new RpcProcessor();
                 connection.Processor = rpc;
 
-                rpc.Send = message =>
+                rpc.Send = message => SafeCall(connection, () =>
                 {
-                    try
-                    {
-                        var data = RpcMessage.Write(message);
-                        connection.Send(data);
-                    }
-                    catch (Exception e)
-                    {
-                        connection.Processor.DispatchError(e);
-                    }
-                };
+                    var data = RpcMessage.Write(message);
+                    connection.Send(data);
+                });
 
                 initializer(rpc);
             };
 
-            server.NewMessageReceived += (connection, data) =>
+            _server.NewMessageReceived += (connection, data) => SafeCall(connection, () =>
             {
-                try
-                {
-                    var message = RpcMessage.Read(data);
-                    Task.Run(() => connection.Processor.ProcessMessage(message));
-                }
-                catch (Exception e)
-                {
-                    connection.Processor.DispatchError(e);
-                }
-            };
+                var message = RpcMessage.Read(data);
+                Task.Run(() => connection.Processor.ProcessMessage(message));
+            });
 
-            server.Start();
+            _server.SessionClosed += (connection, value) =>
+                SafeCall(connection, () => connection.Processor.DispatchDisconnected());
+
+            _server.Start();
+        }
+
+        public void Dispose()
+        {
+            _server.Stop();
+
+            foreach (var connection in _server.GetAllSessions())
+            {
+                connection.Processor.Dispose();
+                connection.CloseWithHandshake("Disconnecting");
+            }
+
+            _server.Dispose();
+        }
+
+        private static void SafeCall(Connection connection, Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                connection.Processor.DispatchError(e);
+            }
         }
     }
 }

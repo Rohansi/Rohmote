@@ -6,9 +6,6 @@ namespace Rohmote
 {
     public class RpcClient : RpcProcessor
     {
-        public event Action Connected;
-        public event Action Disconnected;
-
         private WebSocket _client;
 
         public RpcClient(string ip, int port)
@@ -17,18 +14,10 @@ namespace Rohmote
             _client = new WebSocket(uri);
 
             _client.Opened += (sender, args) =>
-            {
-                var connected = Connected;
-                if (connected != null)
-                    Task.Run(() => SafeCall(connected));
-            };
+                Task.Run(() => DispatchConnected());
 
             _client.Closed += (sender, args) =>
-            {
-                var disconnected = Disconnected;
-                if (disconnected != null)
-                    Task.Run(() => SafeCall(disconnected));
-            };
+                Task.Run(() => SafeCall(DispatchDisconnected));
 
             Send = message => SafeCall(() =>
             {
@@ -46,9 +35,12 @@ namespace Rohmote
             Task.Run(() => SafeCall(_client.Open));
         }
 
-        public void Disconnect()
+        public override void Dispose()
         {
-            SafeCall(() => _client.Close("Disconnecting"));
+            if (_client != null)
+                _client.Close();
+
+            base.Dispose();
         }
 
         private void SafeCall(Action action)
