@@ -38,7 +38,7 @@ namespace Rohmote
         public override void Dispose()
         {
             if (_client != null)
-                _client.Close();
+                ((IDisposable)_client).Dispose();
 
             base.Dispose();
         }

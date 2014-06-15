@@ -56,7 +56,7 @@ namespace Rohmote
             foreach (var connection in _server.GetAllSessions())
             {
                 connection.Processor.Dispose();
-                connection.CloseWithHandshake("Disconnecting");
+                connection.CloseWithHandshake("Closing");
             }
 
             _server.Dispose();
