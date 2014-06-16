@@ -102,6 +102,8 @@ namespace Rohmote
                         }
                         catch (Exception e)
                         {
+                            DispatchError(e);
+
                             Send(new RpcResponse
                             {
                                 Id = request.Id,
