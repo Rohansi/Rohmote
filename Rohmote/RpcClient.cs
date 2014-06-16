@@ -11,7 +11,9 @@ namespace Rohmote
         public RpcClient(string ip, int port)
         {
             var uri = string.Format("ws://{0}:{1}/", ip, port);
+
             _client = new WebSocket(uri);
+            _client.NoDelay = true;
 
             _client.Opened += (sender, args) =>
                 Task.Run(() => DispatchConnected());

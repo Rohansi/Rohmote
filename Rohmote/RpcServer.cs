@@ -25,6 +25,8 @@ namespace Rohmote
 
             _server.NewSessionConnected += connection =>
             {
+                connection.SocketSession.Client.NoDelay = true;
+
                 var rpc = new RpcProcessor();
                 connection.Processor = rpc;
 
